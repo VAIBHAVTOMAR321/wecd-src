@@ -29,7 +29,7 @@ const DISTRICT_API_URL =
 const ChildWelfareCommiRegi = () => {
   const navigate = useNavigate();
   const formRef = useRef(null);
-  const { authFetch } = useAuth();
+  const { authFetch, user } = useAuth();
 
   // ==========================================
   // SIDEBAR STATES
@@ -57,9 +57,11 @@ const ChildWelfareCommiRegi = () => {
 
     child_welfare_committee_name: "",
     child_welfare_committee_number: "",
+    username: user?.username || user?.name || "",
 
     cncp_child_enroll_number: "",
     cncp_child_aadhaar_number: "",
+    cncp_child_dob: "",
 
     // FILE FIELDS
     cncp_child_details: null,
@@ -143,6 +145,21 @@ const ChildWelfareCommiRegi = () => {
   }, [authFetch]);
 
   // ==========================================
+  // AUTO-FILL DISTRICT FROM LOGGED IN USER
+  // ==========================================
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        state: user.state || prev.state,
+        district: user.district || user.district_name || prev.district,
+        username: user.username || user.name || prev.username,
+      }));
+    }
+  }, [user]);
+
+  // ==========================================
   // TOGGLE SIDEBAR
   // ==========================================
 
@@ -194,13 +211,15 @@ const ChildWelfareCommiRegi = () => {
 
     setFormData({
       state: "Uttarakhand",
-      district: "",
+      district: user?.district || user?.district_name || "",
+      username: user?.username || user?.name || "",
 
       child_welfare_committee_name: "",
       child_welfare_committee_number: "",
 
       cncp_child_enroll_number: "",
       cncp_child_aadhaar_number: "",
+      cncp_child_dob: "",
 
       cncp_child_details: null,
       home_verification: null,
@@ -243,6 +262,11 @@ const ChildWelfareCommiRegi = () => {
 
       payload.append(
         "district",
+        formData.username
+      );
+
+      payload.append(
+        "username",
         formData.district
       );
 
@@ -264,6 +288,11 @@ const ChildWelfareCommiRegi = () => {
       payload.append(
         "cncp_child_aadhaar_number",
         formData.cncp_child_aadhaar_number
+      );
+
+      payload.append(
+        "cncp_child_dob",
+        formData.cncp_child_dob
       );
 
       // ========================================
@@ -594,8 +623,7 @@ const ChildWelfareCommiRegi = () => {
                     </Form.Group>
                   </Col>
 
-                  {/* DISTRICT */}
-                  <Col
+                <Col
                     lg={3}
                     md={6}
                     sm={12}
@@ -603,67 +631,24 @@ const ChildWelfareCommiRegi = () => {
                     <Form.Group>
 
                       <Form.Label>
-                        District{" "}
-                        <span className="required">
+                        District  <span className="required">
                           *
                         </span>
                       </Form.Label>
 
-                      <Form.Select
-                        name="district"
+                      <Form.Control
+                        type="text"
+                        name="username"
                         value={
-                          formData.district
+                          formData.username
                         }
                         onChange={
                           handleChange
                         }
-                        required
-                        disabled={
-                          districtLoading
-                        }
-                      >
-
-                        <option value="">
-                          {districtLoading
-                            ? "Loading districts..."
-                            : "Select District"}
-                        </option>
-
-                        {districts.map(
-                          (
-                            item,
-                            index
-                          ) => (
-                            <option
-                              key={`${item.district}-${index}`}
-                              value={
-                                item.district
-                              }
-                            >
-                              {
-                                item.district
-                              }{" "}
-                              -{" "}
-                              {
-                                item.district_hindi
-                              }
-                            </option>
-                          )
-                        )}
-
-                      </Form.Select>
-
-                      {districtLoading && (
-                        <div className="district-loading">
-                          <Spinner
-                            animation="border"
-                            size="sm"
-                            className="me-2"
-                          />
-
-                          Loading districts...
-                        </div>
-                      )}
+                        placeholder="Enter username"
+                        disabled
+                        readOnly
+                      />
 
                     </Form.Group>
                   </Col>
@@ -730,6 +715,9 @@ const ChildWelfareCommiRegi = () => {
                     </Form.Group>
                   </Col>
 
+            
+                  
+
                   {/* CNCP ENROLLMENT */}
                   <Col
                     lg={3}
@@ -785,6 +773,36 @@ const ChildWelfareCommiRegi = () => {
                         placeholder="Enter Aadhaar number"
                         maxLength={12}
                         inputMode="numeric"
+                      />
+
+                    </Form.Group>
+                  </Col>
+
+                  {/* DOB */}
+                  <Col
+                    lg={3}
+                    md={6}
+                    sm={12}
+                  >
+                    <Form.Group>
+
+                      <Form.Label>
+                        Child Date of Birth{" "}
+                        <span className="required">
+                          *
+                        </span>
+                      </Form.Label>
+
+                      <Form.Control
+                        type="date"
+                        name="cncp_child_dob"
+                        value={
+                          formData.cncp_child_dob
+                        }
+                        onChange={
+                          handleChange
+                        }
+                        required
                       />
 
                     </Form.Group>
