@@ -5,7 +5,6 @@ import {
   Col,
   Card,
   Button,
-  Accordion,
   Badge,
 } from "react-bootstrap";
 
@@ -266,6 +265,29 @@ function Home() {
   const { language } = useLanguage();
   const t = translations[language];
 
+  const [apiDepartments, setApiDepartments] = useState([]);
+  const [departmentsLoading, setDepartmentsLoading] = useState(true);
+  const [departmentsError, setDepartmentsError] = useState(null);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      setDepartmentsLoading(true);
+      try {
+        const response = await fetch('https://mahadevaaya.com/srcproject/srcproject_backend/api/departments/');
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        setApiDepartments(data.data || []);
+        setDepartmentsError(null);
+      } catch (err) {
+        setDepartmentsError(err.message);
+        setApiDepartments([]);
+      } finally {
+        setDepartmentsLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
+
   const departments = t.departments.map((dept, i) => ({
     ...dept,
     icon: departmentIcons[i],
@@ -277,14 +299,17 @@ function Home() {
   const schemes = t.schemes.map(scheme => ({ ...scheme, icon: schemeIcons[scheme.category] || <FaBookOpen /> }));
   const schemeDepartments = [t.allDepartments, ...Array.from(new Set(schemes.map((scheme) => scheme.department)))];
   
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [activeSchemeDepartment, setActiveSchemeDepartment] = useState("All Departments");
   const [studentLegendExpanded, setStudentLegendExpanded] = useState(false);
   const [schemeLegendExpanded, setSchemeLegendExpanded] = useState(false);
   const [hoverStat, setHoverStat] = useState(null);
+  const [expandedDepartment, setExpandedDepartment] = useState(null);
 
   const totalSchemes = departments.reduce((sum, dept) => sum + dept.schemesCount, 0);
   const totalBeneficiaries = empowermentAreas.reduce((sum, a) => sum + a.beneficiaries, 0);
+
+  const allCategories = apiDepartments.flatMap((dept) => dept.categories || []);
+  const schemeMax = allCategories.length > 0 ? Math.max(...allCategories.map((c) => c.schemes?.length || 0)) : 0;
 
   const categories = [
     { label: t.empowermentAreas[0].title, icon: <FaGraduationCap />, color: '#1a5276', count: Math.round(totalSchemes * 0.35) },
@@ -303,31 +328,10 @@ function Home() {
     y: 0,
   });
 
-  // Group schemes by department for easier lookup
-  const schemesByDepartment = departments.reduce((acc, dept) => {
-    acc[dept.name] = schemes.filter((scheme) => scheme.department === dept.name);
-    return acc;
-  }, {});
-
   const filteredSchemes =
     activeSchemeDepartment === "All Departments"
       ? schemes : activeSchemeDepartment === t.allDepartments ? schemes
       : schemes.filter((scheme) => scheme.department === activeSchemeDepartment);
-
-  const handleDepartmentClick = (departmentName) => {
-    setSelectedDepartment(departmentName === selectedDepartment ? null : departmentName);
-  };
-
-  useEffect(() => {
-    if (selectedDepartment) {
-      const el = document.getElementById('selected-department-schemes');
-      if (el) {
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      }
-    }
-  }, [selectedDepartment]);
 
   const handleSchemeDepartmentSelect = (department) => {
     setActiveSchemeDepartment(department);
@@ -668,53 +672,77 @@ const handleMouseLeave = () => {
           </div>
 
 
-          <Row className="g-4">
+          {departmentsLoading ? (
+            <div className="text-center py-5">
+              {language === 'en' ? 'Loading departments...' : 'विभाग लोड हो रहे हैं...'}
+            </div>
+          ) : departmentsError ? (
+            <div className="text-center py-5 text-danger">
+              {departmentsError}
+            </div>
+          ) : (
+            <Row className="g-4">
+              {apiDepartments.map((dept) => {
+                const idx = apiDepartments.indexOf(dept);
+                const icon = departmentIcons[idx % departmentIcons.length];
+                const cardColor = departmentColors[idx % departmentColors.length];
+                const color = departmentIconColors[idx % departmentIconColors.length];
+                const categoryCount = dept.categories?.length || 0;
+                const schemeCount = dept.categories?.reduce((sum, c) => sum + (c.schemes?.length || 0), 0) || 0;
+                const isExpanded = expandedDepartment === dept.id;
+                return (
+                  <Col md={6} lg={4} xl={3} key={dept.id}>
+                    <Card
+                      className={`department-card ${isExpanded ? 'department-card-expanded' : ''}`}
+                      style={{ backgroundColor: cardColor, cursor: 'pointer' }}
+                      onClick={() => setExpandedDepartment(expandedDepartment === dept.id ? null : dept.id)}
+                    >
+                      <Card.Body>
+                        <div className="department-header">
+                          <div className="department-icon" style={{ background: color, color: '#fff' }}>{icon}</div>
+                          <div>
+                            <h5>{language === 'en' ? dept.department : dept.department_hindi}</h5>
+                            <span className="expand-indicator">{isExpanded ? '&#9650;' : '&#9660;'}</span>
+                          </div>
+                        </div>
 
-            {departments.map((department, index) => (
+                        <div className="department-stats">
+                          <div>
+                            <strong>{categoryCount}</strong>
+                            <small>{language === 'en' ? 'Categories' : 'श्रेणियां'}</small>
+                          </div>
+                          <div>
+                            <strong>{schemeCount}</strong>
+                            <small>{language === 'en' ? 'Schemes' : 'योजनाएं'}</small>
+                          </div>
+                        </div>
 
-              <Col
-                md={6}
-                lg={4}
-                xl={3}
-                key={index}
-              >
-                <Card
-                  className="department-card"
-                  style={{ backgroundColor: department.cardColor }}
-                >
-
-                  <Card.Body>
-
-                    <div className="department-header">
-                      <div className="department-icon">
-                        {department.icon}
-                      </div>
-                      <h5>{department.name}</h5>
-                    </div>
-
-                    <div className="department-stats">
-                      <div>
-                        <strong>{department.studentCount.toLocaleString('en-IN')}</strong>
-                        <small>{t.studentsSuffix}</small>
-                      </div>
-                      <div>
-                        <strong>{department.schemesCount}</strong>
-                        <small>{t.schemesSuffix}</small>
-                      </div>
-                    </div>
-
-                    <p>
-                      {department.workArea}
-                    </p>
-                  </Card.Body>
-
-                </Card>
-
-              </Col>
-
-            ))}
-
-          </Row>
+                        {isExpanded && (
+                          <>
+                            <div className="department-categories-expanded">
+                              {dept.categories?.map((cat) => (
+                                <div key={cat.id} className="department-category-expanded">
+                                  <h6>{language === 'en' ? cat.category : cat.category_hindi}</h6>
+                                  <div className="department-schemes-expanded">
+                                    {cat.schemes?.map((sch) => (
+                                      <span key={sch.id} className="department-scheme-expanded">
+                                        {language === 'en' ? sch.scheme : sch.scheme_hindi}
+                                      </span>
+                                    ))}
+                                    {!cat.schemes || cat.schemes.length === 0 && <span className="text-muted small">{t.noSchemesFound}</span>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                );
+              })}
+            </Row>
+          )}
 
         </Container>
 
@@ -818,61 +846,44 @@ const handleMouseLeave = () => {
           <Row className="g-5 align-items-center">
             <Col lg={6}>
               <div className="empowerment-list">
-                {empowermentAreas.map((area, index) => (
-                  <div className="empowerment-item" key={index}>
-                    <div className="empowerment-item-icon">
-                      {area.icon}
-                    </div>
-                    <div className="empowerment-item-content">
-                      <h5>{area.title}</h5>
-                      <p>{area.description}</p>
-                    </div>
-                    <div className="empowerment-item-stats">
-                      <div>
-                        <strong>{area.beneficiaries.toLocaleString('en-IN')}</strong>
-                        <small>{t.beneficiariesLabel}</small>
+                {allCategories.map((cat, index) => {
+                  const schemeCount = cat.schemes?.length || 0;
+                  return (
+                    <div className="empowerment-item" key={cat.id}>
+                      <div className="empowerment-item-icon">
+                        {empowermentIcons[index % empowermentIcons.length]}
                       </div>
-                      <div>
-                        <strong>{area.programs}</strong>
-                        <small>{t.schemesSuffix}</small>
+                      <div className="empowerment-item-content">
+                        <h5>{language === 'en' ? cat.category : cat.category_hindi}</h5>
+                        <p>{schemeCount} {t.schemesSuffix}</p>
+                      </div>
+                      <div className="empowerment-item-stats">
+                        <div>
+                          <strong>{schemeCount}</strong>
+                          <small>{t.schemesSuffix}</small>
+                        </div>
+                      </div>
+                      <div className="empowerment-item-arrow">
+                        <FaArrowRight />
                       </div>
                     </div>
-                    <div className="empowerment-item-arrow">
-                      <FaArrowRight />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </Col>
             <Col lg={6}>
               <div className="empowerment-chart-container">
                 <div className="empowerment-chart">
-                  <h5 className="empowerment-chart-title">{t.beneficiariesByAreaLabel}</h5>
-                  {empowermentAreas.map((area, index) => (
-                    <div className="bar-chart-item" key={index}>
-                      <div className="bar-chart-label">{area.title}</div>
-                      <div className="bar-chart-bar-wrapper">
-                        <div
-                          className="bar-chart-bar"
-                          style={{ width: `${(area.beneficiaries / Math.max(...empowermentAreas.map(a => a.beneficiaries))) * 100}%` }}
-                        >
-                          <span>{area.beneficiaries.toLocaleString('en-IN')}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="empowerment-chart">
                   <h5 className="empowerment-chart-title">{t.schemesByAreaLabel}</h5>
-                  {empowermentAreas.map((area, index) => (
-                    <div className="bar-chart-item" key={index}>
-                      <div className="bar-chart-label">{area.title}</div>
+                  {allCategories.map((cat) => (
+                    <div className="bar-chart-item" key={cat.id}>
+                      <div className="bar-chart-label">{language === 'en' ? cat.category : cat.category_hindi}</div>
                       <div className="bar-chart-bar-wrapper">
                         <div
                           className="bar-chart-bar scheme-bar"
-                          style={{ width: `${(area.programs / Math.max(...empowermentAreas.map(a => a.programs))) * 100}%` }}
+                          style={{ width: `${schemeMax > 0 ? ((cat.schemes?.length || 0) / schemeMax) * 100 : 0}%` }}
                         >
-                          <span>{area.programs}</span>
+                          <span>{cat.schemes?.length || 0}</span>
                         </div>
                       </div>
                     </div>
@@ -886,91 +897,6 @@ const handleMouseLeave = () => {
         </Container>
 
       </section>
-
-
-      {/* =================================================
-          FIND SCHEMES FOR YOU
-      ================================================= */}
-
-      <section className="section find-schemes-section section-padding">
-        <Container>
-          <div className="section-heading">
-            <Badge>{t.findSchemesBadge}</Badge>
-            <h2>{t.findSchemesTitle}</h2>
-            <p>
-              {t.findSchemesDescription}
-            </p>
-          </div>
-
-          <Row className="g-3 mb-5 justify-content-center">
-            {departments.map((department, index) => (
-              <Col xs={6} sm={4} md={3} lg={2} key={index}>
-                <div
-                  className={`department-selector-card ${selectedDepartment === department.name ? 'active' : ''}`}
-                  style={{ '--dept-color': department.color, '--dept-bg-color': department.cardColor }}
-                  onClick={() => handleDepartmentClick(department.name)}
-                >
-                  <div className="department-icon">{department.icon}</div>
-                  <small>{department.name}</small>
-                  <div className="scheme-count-badge">
-                    {department.schemesCount} {t.schemesSuffix}
-                  </div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-
-          {selectedDepartment && (
-            <div id="selected-department-schemes" className="selected-department-schemes">
-              <div className="selected-department-header">
-                <h3>{t.schemesUnder} <span>{selectedDepartment}</span></h3>
-              </div>
-
-              <Row className="g-4">
-                {schemesByDepartment[selectedDepartment] && schemesByDepartment[selectedDepartment].length > 0 ? (
-                  schemesByDepartment[selectedDepartment].map((scheme, index) => (
-                    <Col lg={6} key={index}>
-                      <Accordion className="scheme-accordion">
-                        <Accordion.Item eventKey={String(index)}> {/* Unique eventKey */}
-                          <Accordion.Header>
-                            <div className="scheme-title">
-                              <div className="scheme-icon">
-                                <FaBookOpen />
-                              </div>
-                              <div>
-                                <strong>{scheme.name}</strong>
-                                <small>{scheme.department}</small>
-                              </div>
-                            </div>
-                          </Accordion.Header>
-                          <Accordion.Body>
-                            <div className="scheme-detail">
-                              <strong>{t.objectiveLabel}</strong>
-                              <p>{scheme.objective}</p>
-                              <strong>{t.eligibilityLabel}</strong>
-                              <p>{scheme.eligibility}</p>
-                              <strong>{t.benefitsLabel}</strong>
-                              <p>{scheme.benefits}</p>
-                            </div>
-                          </Accordion.Body>
-                        </Accordion.Item>
-                      </Accordion>
-                    </Col>
-                  ))
-                ) : (
-                  <Col lg={12}>
-                    <p className="text-center text-muted">{t.noSchemesFound}</p>
-                  </Col>
-                )}
-              </Row>
-            </div>
-          )}
-        </Container>
-      </section>
-
-
-
-
 
 
       {/* =================================================

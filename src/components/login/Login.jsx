@@ -86,7 +86,7 @@ function Login() {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        setDepartments(data);
+        setDepartments(data.data || []);
         setError(prev => ({ ...prev, departments: null }));
       } catch (error) {
         setError(prev => ({ ...prev, departments: error.message }));
@@ -197,7 +197,7 @@ function Login() {
   const getLoginTitle = () => {
     if (loginType === 'department' && selectedDepartment) {
       if (language === 'hi') return selectedDepartment;
-      const dept = departments.find(d => d.department_hindi === selectedDepartment);
+      const dept = departments.find(d => d.department === selectedDepartment);
       return dept ? dept.department : selectedDepartment;
     }
     if ((loginType === 'district' || loginType === 'cwc') && selectedDistrict) {

@@ -1,0 +1,380 @@
+/* =====================================================
+   STATE DEPARTMENT MANAGEMENT — RESPONSIVE UI
+===================================================== */
+
+.state-department-page {
+  display: flex;
+  min-height: 100vh;
+  background: #f4f7fb;
+  color: #1e293b;
+}
+
+.state-department-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  background: #f4f7fb;
+}
+
+.state-department-content {
+  max-width: 1600px;
+  padding: 30px 30px 42px;
+}
+
+.department-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.department-eyebrow,
+.modal-eyebrow {
+  margin-bottom: 7px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.35px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0;
+  color: #172554;
+  font-size: clamp(23px, 2vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.6px;
+}
+
+.page-title svg { color: #3156a6; font-size: 24px; }
+
+.department-subtitle {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.department-primary-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 10px 17px !important;
+  border: 1px solid #3156a6 !important;
+  border-radius: 9px !important;
+  background: #3156a6 !important;
+  box-shadow: 0 5px 12px rgba(49, 86, 166, .16);
+  color: #fff !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.department-primary-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #25468f !important;
+  box-shadow: 0 8px 16px rgba(49, 86, 166, .22);
+}
+
+.department-primary-btn:disabled { opacity: .7; }
+.department-alert { border-radius: 10px; font-size: 13px; }
+
+.department-stat-row { margin-bottom: 20px; }
+.department-stat-card {
+  height: 100%;
+  border: 1px solid #e5eaf2 !important;
+  border-radius: 13px !important;
+  background: #fff;
+  box-shadow: 0 3px 14px rgba(15, 23, 42, .035);
+}
+.department-stat-card .card-body { display: flex; align-items: center; gap: 14px; padding: 17px 19px; }
+.stat-icon {
+  display: grid;
+  width: 45px;
+  height: 45px;
+  flex: 0 0 45px;
+  place-items: center;
+  border-radius: 12px;
+  font-size: 18px;
+}
+.stat-icon-blue { background: #edf3ff; color: #3156a6; }
+.stat-icon-violet { background: #f2efff; color: #7255c7; }
+.stat-icon-teal { background: #e8f8f5; color: #168878; }
+.stat-label { margin-bottom: 3px; color: #64748b; font-size: 12px; font-weight: 600; }
+.stat-value { color: #172554; font-size: 24px; font-weight: 800; line-height: 1.1; }
+
+.departments-card {
+  overflow: hidden;
+  border: 1px solid #e5eaf2 !important;
+  border-radius: 14px !important;
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, .045);
+}
+.department-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 19px 21px !important;
+  border-bottom: 1px solid #edf0f5 !important;
+  background: #fff !important;
+}
+.department-list-header h2 { margin: 0; color: #1e293b; font-size: 16px; font-weight: 800; }
+.department-list-header p { margin: 4px 0 0; color: #8793a5; font-size: 11px; }
+.department-search { width: min(390px, 48%); }
+.department-search .input-group-text,
+.department-search .form-control {
+  min-height: 39px;
+  border-color: #e1e7f0;
+  background: #fbfcfe;
+  color: #475569;
+  font-size: 12px;
+  box-shadow: none !important;
+}
+.department-search .input-group-text { border-right: 0; color: #8290a5; }
+.department-search .form-control { border-left: 0; }
+.department-search .form-control:focus { border-color: #b9c9e9; background: #fff; }
+
+.department-table { min-width: 760px; }
+.department-table thead th {
+  padding: 13px 18px;
+  border-bottom: 1px solid #e9edf4;
+  background: #f8faff;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .55px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.department-table tbody td {
+  padding: 15px 18px;
+  border-color: #eef1f5;
+  color: #475569;
+  font-size: 12px;
+  vertical-align: middle;
+}
+.department-table tbody tr:last-child td { border-bottom: 0; }
+.department-table tbody tr:hover { background: #fbfcff; }
+.department-name-cell { display: flex; align-items: center; gap: 11px; min-width: 210px; }
+.department-row-icon {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+  place-items: center;
+  border-radius: 10px;
+  background: #edf3ff;
+  color: #3156a6;
+}
+.department-name-cell strong { display: block; color: #263653; font-size: 12px; font-weight: 750; }
+.department-name-cell small { display: block; margin-top: 3px; color: #9aa5b5; font-size: 10px; }
+.department-hindi-cell { color: #64748b !important; }
+.count-badge { padding: 6px 9px; border: 1px solid #e5eaf2; border-radius: 20px; color: #53647e !important; font-size: 10px; font-weight: 700; }
+.count-badge-teal { border-color: #d5eee9; background: #effaf7 !important; color: #168878 !important; }
+.department-actions { display: flex; justify-content: flex-end; gap: 6px; white-space: nowrap; }
+.action-btn { display: inline-flex !important; align-items: center; gap: 6px; padding: 6px 9px !important; border: 1px solid transparent !important; border-radius: 7px !important; font-size: 11px !important; font-weight: 700 !important; }
+.action-view { background: #eff5ff !important; color: #3156a6 !important; }
+.action-edit { background: #fff7e9 !important; color: #b7791f !important; }
+.action-delete { background: #fff0f0 !important; color: #c24141 !important; }
+.action-btn:hover { filter: brightness(.97); }
+.department-list-footer { padding: 11px 18px !important; border-top: 1px solid #edf0f5 !important; background: #fcfdff !important; color: #8793a5; font-size: 11px; }
+
+.department-state,
+.department-empty-state {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 30px;
+  color: #7b8798;
+  font-size: 12px;
+}
+.department-state .spinner-border { color: #3156a6; }
+.empty-icon { display: grid; width: 54px; height: 54px; place-items: center; border-radius: 16px; background: #edf3ff; color: #3156a6; font-size: 22px; }
+.department-empty-state h3 { margin: 4px 0 0; color: #263653; font-size: 16px; font-weight: 800; }
+.department-empty-state p { margin: 0 0 5px; color: #8491a4; text-align: center; }
+
+/* Bootstrap modal presentation */
+.department-modal .modal-content {
+  overflow: hidden;
+  border: 1px solid #e4e9f1;
+  border-radius: 16px;
+  box-shadow: 0 22px 70px rgba(15, 23, 42, .2);
+}
+.department-modal .modal-header {
+  align-items: flex-start;
+  padding: 21px 24px 17px;
+  border-bottom: 1px solid #edf0f5;
+  background: #fff;
+}
+.department-modal .modal-title { color: #1e2d4d; font-size: 20px; font-weight: 800; }
+.department-modal .modal-subtitle { margin-top: 5px; color: #8491a4; font-size: 11px; }
+.department-modal .modal-body { padding: 22px 24px; background: #fff; }
+.department-modal .modal-footer { gap: 8px; padding: 15px 24px; border-top: 1px solid #edf0f5; background: #fbfcfe; }
+.department-modal .form-label { margin-bottom: 7px; color: #475569; font-size: 11px; font-weight: 750; }
+.department-modal .form-control { min-height: 41px; border-color: #dfe6ef; border-radius: 8px; color: #263653; font-size: 12px; box-shadow: none; }
+.department-modal .form-control:focus { border-color: #8ca8dc; box-shadow: 0 0 0 3px rgba(49, 86, 166, .09); }
+.required-star { color: #dc5353; }
+.modal-cancel-btn { display: inline-flex !important; align-items: center; gap: 7px; min-height: 40px; padding: 8px 15px !important; border: 1px solid #e1e7ef !important; border-radius: 8px !important; background: #fff !important; color: #59677d !important; font-size: 12px !important; font-weight: 700 !important; }
+
+.form-section { margin-bottom: 26px; }
+.form-section:last-child { margin-bottom: 0; }
+.form-section-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 17px; }
+.form-section-heading h3 { margin: 0; color: #253653; font-size: 14px; font-weight: 800; }
+.form-section-heading p { margin: 4px 0 0; color: #8793a5; font-size: 11px; }
+.section-number { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 10px; background: #edf3ff; color: #3156a6; font-size: 11px; font-weight: 800; }
+.section-heading-with-action { justify-content: space-between; }
+.add-inline-btn,
+.add-scheme-btn { display: inline-flex !important; align-items: center; gap: 7px; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; }
+.add-inline-btn { padding: 8px 12px !important; }
+.nested-empty-state { display: flex; min-height: 90px; align-items: center; justify-content: center; gap: 10px; border: 1px dashed #d7dfeb; border-radius: 11px; background: #fbfcff; color: #8491a4; font-size: 12px; }
+.nested-empty-state svg { color: #8ba0c5; font-size: 18px; }
+.category-editor-card { margin-bottom: 15px; padding: 17px; border: 1px solid #e3e9f2; border-radius: 12px; background: #fbfcff; }
+.category-editor-card:last-child { margin-bottom: 0; }
+.category-editor-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.category-index-badge { padding: 6px 9px; border-radius: 6px; background: #eaf0ff !important; color: #3156a6 !important; font-size: 9px; letter-spacing: .5px; }
+.record-id { margin-left: 8px; color: #9aa5b5; font-size: 10px; }
+.remove-record-btn { display: inline-flex !important; align-items: center; gap: 6px; padding: 3px 0 !important; color: #c14b4b !important; font-size: 10px !important; font-weight: 700 !important; text-decoration: none !important; }
+.schemes-editor-area { margin-top: 18px; padding-top: 15px; border-top: 1px solid #e8edf4; }
+.schemes-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.schemes-editor-heading strong { display: block; color: #34445f; font-size: 12px; }
+.schemes-editor-heading small { display: block; margin-top: 3px; color: #929daf; font-size: 10px; }
+.scheme-editor-row { margin-bottom: 10px; }
+.scheme-remove-col { padding-bottom: 1px; }
+.scheme-remove-btn { display: inline-flex !important; align-items: center; gap: 6px; min-height: 39px; border: 1px solid #f1dada !important; border-radius: 8px !important; background: #fff7f7 !important; color: #bd5555 !important; font-size: 10px !important; }
+.no-schemes-note { padding: 12px; border: 1px dashed #e1e7ef; border-radius: 8px; color: #98a2b1; font-size: 11px; text-align: center; }
+
+.view-category-card { margin-bottom: 13px; padding: 16px; border: 1px solid #e5eaf2; border-radius: 11px; background: #fcfdff; }
+.view-category-card:last-child { margin-bottom: 0; }
+.view-category-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 11px; border-bottom: 1px solid #edf0f5; }
+.view-category-title h3 { margin: 0; color: #253653; font-size: 14px; font-weight: 800; }
+.view-category-title p { margin: 4px 0 0; color: #8793a5; font-size: 11px; }
+.view-category-title .badge { padding: 6px 9px; border: 1px solid #e5eaf2; border-radius: 20px; font-size: 10px; }
+.view-scheme-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; padding-top: 12px; }
+.view-scheme-item { display: flex; align-items: flex-start; gap: 9px; padding: 10px; border-radius: 8px; background: #f5f8fd; }
+.scheme-dot { width: 7px; height: 7px; flex: 0 0 7px; margin-top: 5px; border-radius: 50%; background: #4d75bf; }
+.view-scheme-item strong { display: block; color: #40516e; font-size: 11px; }
+.view-scheme-item small { display: block; margin-top: 3px; color: #8995a7; font-size: 10px; }
+
+.delete-confirm-modal .modal-dialog { max-width: 440px; }
+.delete-confirm-modal .modal-body { text-align: center; }
+.delete-warning-icon { display: grid; width: 52px; height: 52px; margin: 2px auto 14px; place-items: center; border-radius: 50%; background: #fff0f0; color: #c24141; font-size: 20px; }
+.delete-confirm-modal .modal-body p { margin-bottom: 7px; color: #35445d; font-size: 13px; }
+.delete-confirm-modal .modal-body small { display: block; color: #8b96a7; font-size: 11px; line-height: 1.5; }
+.delete-confirm-modal .modal-footer { justify-content: center; }
+.delete-confirm-modal .btn-danger { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+
+@media (max-width: 991px) {
+  .state-department-content { padding: 23px 20px 34px; }
+  .department-table thead th, .department-table tbody td { padding-right: 12px; padding-left: 12px; }
+}
+
+@media (max-width: 767px) {
+  .state-department-content { padding: 18px 12px 28px; }
+  .department-heading-row { align-items: flex-start; flex-direction: column; }
+  .department-heading-row > .department-primary-btn { width: 100%; }
+  .department-list-header { align-items: stretch; flex-direction: column; padding: 16px !important; }
+  .department-search { width: 100%; }
+  .department-stat-card .card-body { padding: 14px; }
+  .department-table { min-width: 740px; }
+  .department-modal .modal-dialog { margin: 10px; }
+  .department-modal .modal-header,
+  .department-modal .modal-body { padding-right: 16px; padding-left: 16px; }
+  .department-modal .modal-footer { padding-right: 16px; padding-left: 16px; }
+  .section-heading-with-action { align-items: flex-start; flex-direction: column; }
+  .add-inline-btn { align-self: flex-start; }
+  .category-editor-card { padding: 13px; }
+  .scheme-remove-col { display: flex; justify-content: flex-end; }
+  .view-scheme-list { grid-template-columns: 1fr; }
+}
+
+
+/* =====================================================
+   DEPARTMENT EDITOR MODAL — DEFINITIVE SCROLL FIX
+   The form wraps Header, Body and Footer, so it must be
+   the flex container inside Bootstrap's modal-content.
+===================================================== */
+
+.department-editor-dialog.modal-dialog {
+  width: calc(100% - 32px);
+  max-width: 1200px;
+  height: calc(100dvh - 24px);
+  max-height: calc(100dvh - 24px);
+  margin: 12px auto;
+  display: flex;
+  align-items: stretch;
+}
+
+.department-editor-dialog .modal-content {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100%;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Important: Form is the direct child of modal-content. */
+.department-editor-dialog .modal-content > form {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  min-width: 0;
+  min-height: 0 !important;
+  height: 100%;
+  overflow: hidden !important;
+}
+
+.department-editor-dialog .modal-content > form > .modal-header,
+.department-editor-dialog .modal-content > form > .modal-footer {
+  flex: 0 0 auto !important;
+}
+
+.department-editor-dialog .modal-content > form > .modal-body {
+  display: block !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+
+.department-editor-dialog .modal-content > form > .modal-body::-webkit-scrollbar {
+  width: 9px;
+}
+
+.department-editor-dialog .modal-content > form > .modal-body::-webkit-scrollbar-track {
+  background: #f1f4f9;
+  border-radius: 10px;
+}
+
+.department-editor-dialog .modal-content > form > .modal-body::-webkit-scrollbar-thumb {
+  background: #aab8cc;
+  border: 2px solid #f1f4f9;
+  border-radius: 10px;
+}
+
+@media (max-width: 767px) {
+  .department-editor-dialog.modal-dialog {
+    width: calc(100% - 16px);
+    height: calc(100dvh - 16px);
+    max-height: calc(100dvh - 16px);
+    margin: 8px auto;
+  }
+
+  .department-editor-dialog .modal-content > form > .modal-body {
+    padding: 16px !important;
+  }
+}

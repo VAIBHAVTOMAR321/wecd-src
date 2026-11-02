@@ -16,6 +16,7 @@ import SuccessStory from "./components/home_layout/SuccessStory";
 import AboutUs from "./components/home_layout/AboutUs";
 import Footer from "./components/footer/Footer";
 import StateDashBoard from "./components/all_dashbords/state_Admin/StateDashBoard";
+import StateDepartmentManage from "./components/all_dashbords/state_admin/StateDepartmentManage";
 import DepartDashBoard from "./components/all_dashbords/depart/DepartDashBoard";
 import CWCDashBoard from "./components/all_dashbords/cwc_dashboard/CWCDashBoard";
 import { LanguageProvider } from "./context/LanguageContext";
@@ -25,7 +26,7 @@ import CWCRegiDetails from "./components/all_dashbords/cwc_dashboard/CWCRegiDeta
 // A wrapper component to conditionally render the NavBar
 const AppContent = () => {
   const location = useLocation();
-  const isDisRoute = ["/DisDashBoard", "/DepartDashBoard", "/StateDashBoard", "/CWCRegiDetails", "/ChildWelfareCommiRegi","/CWCDashBoard"].some((route) =>
+  const isDisRoute = ["/DisDashBoard", "/DepartDashBoard", "/StateDashBoard", "/StateDepartmentManage", "/CWCRegiDetails", "/ChildWelfareCommiRegi","/CWCDashBoard"].some((route) =>
     location.pathname.startsWith(route)
   );
 
@@ -44,6 +45,7 @@ const AppContent = () => {
           {/* Dis Routes */}
           <Route path="/DisDashboard" element={<DisDashBoard />} />
           <Route path="/StateDashBoard" element={<StateDashBoard />} />
+          <Route path="/StateDepartmentManage" element={<StateDepartmentManage />} />
           <Route path="/DepartDashBoard" element={<DepartDashBoard />} />
           <Route path="/CWCDashBoard" element={<CWCDashBoard />} />
           <Route path="/ChildWelfareCommiRegi" element={<ChildWelfareCommiRegi />} />

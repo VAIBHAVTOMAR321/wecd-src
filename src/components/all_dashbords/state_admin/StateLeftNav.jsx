@@ -19,6 +19,7 @@ import {
   FaCalendarAlt,
   FaPlusSquare,
   FaEdit,
+  FaList,
   FaMusic,
   FaGlassCheers,
   FaIndustry,
@@ -72,13 +73,20 @@ const StateLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet, onNavCl
     }
   };
 
- const menuItems = [
+  const menuItems = [
       {
         icon: <FaTachometerAlt />,
         label: "DashBoard",
-        path: "/AdminDashBoard",
+        path: "/StateDashBoard",
         active: true,
       },
+      {
+        icon: <FaList />,
+        label: "Manage Departments",
+        path: "/StateDepartmentManage",
+        active: false,
+      },
+      
       
       
       
@@ -96,7 +104,7 @@ const StateLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet, onNavCl
           {sidebarOpen ? (
             <div className="logo-container">
               <div className="logo">
-                  Admin Panel
+                  State Panel
               </div>
             </div>
           ) : (
