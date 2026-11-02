@@ -1,22 +1,16 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Container, Row, Col, Form } from "react-bootstrap";
+import React, { useEffect, useMemo, useState } from "react";
+import { Container, Row, Col, Form, Spinner, Alert } from "react-bootstrap";
 import {
   FaUsers,
   FaMapMarkerAlt,
-  FaCheckCircle,
-  FaPercentage,
+  FaLayerGroup,
+  FaBookOpen,
   FaFilter,
-  FaSchool,
-  FaHeartbeat,
-  FaLeaf,
-  FaHardHat,
+  FaTrophy,
+  FaChartBar,
+  FaBullseye,
   FaUniversity,
   FaArrowRight,
-  FaChartBar,
-  FaTrophy,
-  FaQuoteLeft,
-  FaArrowUp,
-  FaBullseye,
 } from "react-icons/fa";
 import { Bar } from "react-chartjs-2";
 import {
@@ -28,451 +22,674 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-
 import "../../../src/assets/css/SuccessStory.css";
 import { useLanguage } from "../../context/LanguageContext";
 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+const API_BASE = "https://mahadevaaya.com/srcproject/srcproject_backend/api";
+const DEPARTMENTS_API = `${API_BASE}/departments/`;
+// Public district master-list API. No JWT or login is required.
+const DISTRICTS_API = `${API_BASE}/districts/`;
+// Public aggregate endpoint: district-wise count of CNCP registration forms.
+const DISTRICT_COUNTS_API = `${API_BASE}/district-registration-counts/`;
 
-const translations = {
+const copy = {
   en: {
     badge: "Our Achievements",
     heading: "Impact & Success Stories",
-    subheading: "Stories of positive change in villages through our efforts",
-    filters: "Filters",
-    allVillages: "All Villages",
-    allDepartments: "All Departments",
-    allSchemes: "All Schemes",
-    villagesCovered: "Villages Covered",
-    studentsRegistered: "Students Registered",
-    successfulCompletions: "Successful Completions",
-    overallSuccessRate: "Overall Success Rate",
-    villagePerformance: "Village Performance",
-    registeredVsCompleted: "Registered vs Completed comparison",
-    villageBreakdown: "Village Breakdown",
-    successRate: "success rate",
-    registered: "Registered",
-    completed: "Completed",
-    activeSchemes: "Active Schemes",
-    noResults: "No matching stories found",
-    noResultsDesc: "Please adjust your filters.",
-    success: "Success",
-    successData: [
-      {
-        village: "Dehradun",
-        registered: 25000,
-        completed: 23000,
-        departments: ["Education Department", "Skill Development and Service Scheme Department"],
-        story: "Digital literacy programs in Dehradun have opened new employment opportunities for youth.",
-        schemes: [
-          { name: "Midday Meal Scheme", enrolled: 15000 },
-          { name: "Digital Literacy", enrolled: 10000 },
-        ],
-      },
-      {
-        village: "Haridwar",
-        registered: 22000,
-        completed: 19360,
-        departments: ["Health and Family Welfare Department", "Women and Child Development Department"],
-        story: "The success of health and nutrition schemes in Haridwar has reduced maternal and infant mortality rates.",
-        schemes: [
-          { name: "Integrated Child Development Services", enrolled: 12000 },
-          { name: "Save the Daughter, Educate the Daughter", enrolled: 10000 },
-        ],
-      },
-      {
-        village: "Nainital",
-        registered: 18000,
-        completed: 17100,
-        departments: ["Agriculture Department", "Rural Development Department"],
-        story: "Agricultural training and women empowerment programs have increased the income of rural families in Nainital.",
-        schemes: [
-          { name: "Farmer Honor Fund", enrolled: 10000 },
-          { name: "Rural Development Scheme", enrolled: 8000 },
-        ],
-      },
-      {
-        village: "Udham Singh Nagar",
-        registered: 20000,
-        completed: 18000,
-        departments: ["Labor Department", "Social Welfare Department"],
-        story: "Vocational training initiatives in Udham Singh Nagar have prepared a skilled workforce.",
-        schemes: [
-          { name: "Child Labor Prevention", enrolled: 9000 },
-          { name: "Sukanya Samriddhi Scheme", enrolled: 11000 },
-        ],
-      },
-      {
-        village: "Almora",
-        registered: 15500,
-        completed: 14200,
-        departments: ["Education Department", "Panchayati Raj Department"],
-        story: "Starting mobile learning centers in remote villages of Almora has improved student attendance.",
-        schemes: [
-          { name: "Sarva Shiksha Abhiyan", enrolled: 8500 },
-          { name: "Midday Meal Scheme", enrolled: 7000 },
-        ],
-      },
-    ],
+    subheading:
+      "A live overview of registrations across districts, departments, categories and schemes.",
+    filters: "Explore data",
+    allDistricts: "All available districts",
+    allDepartments: "All departments",
+    allCategories: "All categories",
+    allSchemes: "All schemes",
+    districts: "Districts in data",
+    registered: "Registered students",
+    categories: "Categories",
+    schemes: "Schemes",
+    districtPerformance: "District-wise registration",
+    districtDesc:
+      "District-wise registration totals calculated from submitted CNCP registration forms.",
+    categoryPerformance: "Category-wise registrations",
+    categoryDesc:
+      "Distinct registered-student counts reported by the department API",
+    schemePerformance: "Scheme-wise registrations",
+    schemeDesc: "Registered students mapped to each scheme",
+    districtBreakdown: "District breakdown",
+    departmentBreakdown: "Department breakdown",
+    categoryBreakdown: "Category breakdown",
+    schemeBreakdown: "Scheme breakdown",
+    registrations: "Registrations",
+    noDistrict: "District registration totals are not available.",
+    noDistrictDesc:
+      "The district-wise registration count API did not return any matching records.",
+    noData: "No records match the selected filters.",
+    loading: "Loading live data…",
+    retry: "Retry",
+    apiError: "Unable to load data from the API.",
+    dataNote:
+      "Only values returned by the connected APIs are shown. Completion and success-rate figures are not displayed because the supplied APIs do not provide those fields.",
+    district: "District",
+    department: "Department",
+    category: "Category",
+    scheme: "Scheme",
+    view: "View details",
+    total: "Total",
   },
   hi: {
     badge: "हमारी उपलब्धियाँ",
-    heading: "प्रभाव और सफलता की कहानियाँ",
-    subheading: "हमारे प्रयासों से गांवों में हुई सकारात्मक बदलाव की कहानियाँ",
-    filters: "फ़िल्टर",
-    allVillages: "सभी गांव",
+    heading: "प्रभाव और उपलब्धियाँ",
+    subheading: "जिला, विभाग, श्रेणी और योजनाओं के पंजीकरण का लाइव विवरण।",
+    filters: "डेटा देखें",
+    allDistricts: "सभी उपलब्ध जिले",
     allDepartments: "सभी विभाग",
+    allCategories: "सभी श्रेणियाँ",
     allSchemes: "सभी योजनाएँ",
-    villagesCovered: "गांव कवर",
-    studentsRegistered: "छात्र पंजीकृत",
-    successfulCompletions: "सफल पूर्णता",
-    overallSuccessRate: "समग्र सफलता दर",
-    villagePerformance: "ग्राम प्रदर्शन",
-    registeredVsCompleted: "पंजीकृत बनाम पूर्ण तुलना",
-    villageBreakdown: "ग्राम विवरण",
-    successRate: "सफलता दर",
-    registered: "पंजीकृत",
-    completed: "पूर्ण",
-    activeSchemes: "सक्रिय योजनाएँ",
-    noResults: "कोई मिलान वाली कहानी नहीं मिली",
-    noResultsDesc: "कृपया अपने फ़िल्टर को समायोजित करें।",
-    success: "सफलता",
-    successData: [
-      {
-        village: "देहरादून",
-        registered: 25000,
-        completed: 23000,
-        departments: ["शिक्षा विभाग", "कौशल विकास एवं सेवा योजना विभाग"],
-        story: "देहरादून में डिजिटल साक्षरता कार्यक्रमों ने युवाओं के लिए रोजगार के नए अवसर खोले हैं।",
-        schemes: [
-          { name: "मध्याह्न भोजन योजना", enrolled: 15000 },
-          { name: "डिजिटल साक्षरता", enrolled: 10000 },
-        ],
-      },
-      {
-        village: "हरिद्वार",
-        registered: 22000,
-        completed: 19360,
-        departments: ["स्वास्थ्य एवं परिवार कल्याण विभाग", "महिला कल्याण विभाग"],
-        story: "हरिद्वार में स्वास्थ्य और पोषण योजनाओं की सफलता ने मातृ एवं शिशु मृत्यु दर में कमी की है।",
-        schemes: [
-          { name: "एकीकृत बाल विकास सेवाएँ", enrolled: 12000 },
-          { name: "बेटी बचाओ, बेटी पढ़ाओ", enrolled: 10000 },
-        ],
-      },
-      {
-        village: "नैनीताल",
-        registered: 18000,
-        completed: 17100,
-        departments: ["कृषि विभाग", "ग्राम्य विकास विभाग"],
-        story: "नैनीताल में कृषि प्रशिक्षण और महिला सशक्तिकरण कार्यक्रमों ने ग्रामीण परिवारों की आय में वृद्धि की है।",
-        schemes: [
-          { name: "किसान सम्मान निधि", enrolled: 10000 },
-          { name: "ग्राम्य विकास योजना", enrolled: 8000 },
-        ],
-      },
-      {
-        village: "उधम सिंह नगर",
-        registered: 20000,
-        completed: 18000,
-        departments: ["श्रम विभाग", "समाज कल्याण विभाग"],
-        story: "उधम सिंह नगर में व्यावसायिक प्रशिक्षण पहलों ने कुशल कार्यबल तैयार किया है।",
-        schemes: [
-          { name: "बाल श्रम रोकथाम", enrolled: 9000 },
-          { name: "सुकन्या समृद्धि योजना", enrolled: 11000 },
-        ],
-      },
-      {
-        village: "अल्मोड़ा",
-        registered: 15500,
-        completed: 14200,
-        departments: ["शिक्षा विभाग", "पंचायती राज विभाग"],
-        story: "अल्मोड़ा के दूरदराज के गांवों में मोबाइल लर्निंग सेंटर शुरू करने से छात्रों की उपस्थिति में सुधार हुआ है।",
-        schemes: [
-          { name: "सर्व शिक्षा अभियान", enrolled: 8500 },
-          { name: "मध्याह्न भोजन योजना", enrolled: 7000 },
-        ],
-      },
-    ],
+    districts: "डेटा में जिले",
+    registered: "पंजीकृत विद्यार्थी",
+    categories: "श्रेणियाँ",
+    schemes: "योजनाएँ",
+    districtPerformance: "जिला-वार पंजीकरण",
+    districtDesc:
+      "जिला-वार पंजीकरण संख्या CNCP के जमा किए गए पंजीकरण फॉर्म से प्राप्त की गई है।",
+    categoryPerformance: "श्रेणी-वार पंजीकरण",
+    categoryDesc:
+      "विभाग API द्वारा दिए गए पंजीकृत विद्यार्थियों के अलग-अलग आँकड़े",
+    schemePerformance: "योजना-वार पंजीकरण",
+    schemeDesc: "प्रत्येक योजना से जुड़े पंजीकृत विद्यार्थी",
+    districtBreakdown: "जिला विवरण",
+    departmentBreakdown: "विभाग विवरण",
+    categoryBreakdown: "श्रेणी विवरण",
+    schemeBreakdown: "योजना विवरण",
+    registrations: "पंजीकरण",
+    noDistrict: "जिला-वार पंजीकरण संख्या उपलब्ध नहीं है।",
+    noDistrictDesc: "जिला-वार पंजीकरण API से संबंधित रिकॉर्ड नहीं मिले।",
+    noData: "चयनित फ़िल्टर के लिए कोई रिकॉर्ड नहीं मिला।",
+    loading: "लाइव डेटा लोड हो रहा है…",
+    retry: "पुनः प्रयास करें",
+    apiError: "API से डेटा लोड नहीं हो सका।",
+    dataNote:
+      "यहाँ केवल API से प्राप्त आँकड़े दिखाए गए हैं। पूर्णता और सफलता दर नहीं दिखाई गई है क्योंकि उपलब्ध API ये फ़ील्ड प्रदान नहीं करती हैं।",
+    district: "जिला",
+    department: "विभाग",
+    category: "श्रेणी",
+    scheme: "योजना",
+    view: "विवरण देखें",
+    total: "कुल",
   },
 };
 
-const statThemes = [
-  { bg: "#fff5f0", border: "#ffd6c7", iconBg: "#ffe8df", iconColor: "#d44a0a", numColor: "#a83800", shadow: "rgba(232,114,12,0.10)", hoverShadow: "rgba(232,114,12,0.20)", bar: "#e8720c" },
-  { bg: "#eef5ff", border: "#c6dfff", iconBg: "#dae8ff", iconColor: "#2563eb", numColor: "#1a3fa0", shadow: "rgba(37,99,235,0.10)", hoverShadow: "rgba(37,99,235,0.20)", bar: "#3b82f6" },
-  { bg: "#edfcf2", border: "#b8ecd0", iconBg: "#cef5da", iconColor: "#0d8043", numColor: "#06612f", shadow: "rgba(13,128,67,0.10)", hoverShadow: "rgba(13,128,67,0.20)", bar: "#10b981" },
-  { bg: "#f5effe", border: "#e0ccff", iconBg: "#ecddff", iconColor: "#7c3aed", numColor: "#5b21b6", shadow: "rgba(124,58,237,0.10)", hoverShadow: "rgba(124,58,237,0.20)", bar: "#8b5cf6" },
-];
+const number = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+const labelOf = (item, language, enKey, hiKey) =>
+  language === "hi"
+    ? item?.[hiKey] || item?.[enKey] || "-"
+    : item?.[enKey] || item?.[hiKey] || "-";
+const unwrap = (payload) =>
+  Array.isArray(payload) ? payload : payload?.data || payload?.results || [];
 
-const chartBarColors = ["#06b6d4", "#ef4444", "#10b981", "#d4a017", "#8b5cf6"];
-const chartBarColorsLight = ["rgba(6,182,212,0.7)", "rgba(239,68,68,0.7)", "rgba(16,185,129,0.7)", "rgba(212,160,23,0.7)", "rgba(139,92,246,0.7)"];
-
-function useAnimatedCounter(end, duration = 2000) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const started = useRef(false);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true;
-          const t0 = performance.now();
-          const run = (now) => {
-            const p = Math.min((now - t0) / duration, 1);
-            setCount(Math.floor((1 - Math.pow(1 - p, 3)) * end));
-            if (p < 1) requestAnimationFrame(run);
-          };
-          requestAnimationFrame(run);
-        }
-      },
-      { threshold: 0.3 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [end, duration]);
-  return [count, ref];
-}
-
-function SuccessStory() {
-  const { language } = useLanguage();
-  const t = translations[language];
-  const [filters, setFilters] = useState({ village: "all", department: "all", scheme: "all" });
-  const [animVillages, villagesRef] = useAnimatedCounter(t.successData.length);
-  const totalRegistered = t.successData.reduce((s, i) => s + i.registered, 0);
-  const totalCompleted = t.successData.reduce((s, i) => s + i.completed, 0);
-  const overallSuccessRate = totalRegistered > 0 ? Math.round((totalCompleted / totalRegistered) * 100) : 0;
-  const [animRegistered, registeredRef] = useAnimatedCounter(totalRegistered);
-  const [animCompleted, completedRef] = useAnimatedCounter(totalCompleted);
-  const [animRate, rateRef] = useAnimatedCounter(overallSuccessRate);
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const filteredData = useMemo(() => {
-    return t.successData.filter((item) => {
-      const vm = filters.village === "all" || item.village === filters.village;
-      const dm = filters.department === "all" || item.departments.includes(filters.department);
-      const sm = filters.scheme === "all" || item.schemes.some((s) => s.name === filters.scheme);
-      return vm && dm && sm;
-    });
-  }, [filters, t]);
-
-  const allDepartments = useMemo(() => [...new Set(t.successData.flatMap((i) => i.departments))], [t]);
-  const allSchemes = useMemo(() => [...new Set(t.successData.flatMap((i) => i.schemes.map((s) => s.name)))], [t]);
-
-  const chartData = {
-    labels: filteredData.map((d) => d.village),
+function ChartPanel({
+  title,
+  subtitle,
+  labels,
+  values,
+  color = "#3986c9",
+  emptyText,
+}) {
+  const hasData = labels.length > 0;
+  const data = {
+    labels,
     datasets: [
       {
-        label: t.registered,
-        data: filteredData.map((d) => d.registered),
-        backgroundColor: filteredData.map((_, i) => chartBarColorsLight[i % 5]),
-        borderColor: filteredData.map((_, i) => chartBarColors[i % 5]),
-        borderWidth: 2, borderRadius: 6, barPercentage: 0.55,
-      },
-      {
-        label: t.completed,
-        data: filteredData.map((d) => d.completed),
-        backgroundColor: filteredData.map((_, i) => chartBarColors[i % 5]),
-        borderColor: filteredData.map((_, i) => chartBarColors[i % 5]),
-        borderWidth: 2, borderRadius: 6, barPercentage: 0.55,
+        label: title,
+        data: values,
+        backgroundColor: "rgba(44, 126, 190, .72)",
+        borderColor: color,
+        borderWidth: 1.5,
+        borderRadius: 7,
+        maxBarThickness: 42,
       },
     ],
   };
-
-  const chartOptions = {
+  const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: "bottom",
-        labels: { font: { size: 12, weight: "600" }, color: "#5a6577", usePointStyle: true, pointStyle: "rectRounded", padding: 16 },
-      },
+      legend: { display: false },
       tooltip: {
-        backgroundColor: "#0e1a2b",
-        titleFont: { size: 13, weight: "700" },
-        bodyFont: { size: 12 },
-        padding: 12, cornerRadius: 10,
-        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString("en-IN")}` },
+        callbacks: {
+          label: (ctx) =>
+            `${ctx.dataset.label}: ${number(ctx.parsed.y).toLocaleString("en-IN")}`,
+        },
       },
     },
     scales: {
-      x: { ticks: { font: { size: 12, weight: "600" }, color: "#5a6577" }, grid: { display: false } },
-      y: { ticks: { font: { size: 11 }, color: "#7b8794", callback: (v) => (v >= 1000 ? v / 1000 + "K" : v) }, grid: { color: "rgba(0,0,0,0.04)" } },
+      x: {
+        grid: { display: false },
+        ticks: { color: "#5b6b7c", maxRotation: 35, minRotation: 0 },
+      },
+      y: {
+        beginAtZero: true,
+        grid: { color: "#edf1f5" },
+        ticks: {
+          color: "#718096",
+          callback: (v) => Number(v).toLocaleString("en-IN"),
+        },
+      },
     },
   };
+  return (
+    <div className="ss-chart-card">
+      <div className="ss-chart-heading">
+        <span className="ss-chart-icon">
+          <FaChartBar />
+        </span>
+        <div>
+          <h3>{title}</h3>
+          <p>{subtitle}</p>
+        </div>
+      </div>
+      {hasData ? (
+        <div className="ss-chart-canvas">
+          <Bar data={data} options={options} />
+        </div>
+      ) : (
+        <div className="ss-empty-chart">{emptyText}</div>
+      )}
+    </div>
+  );
+}
 
-  const statCards = [
-    { icon: <FaMapMarkerAlt />, value: `${animVillages}+`, label: t.villagesCovered, ref: villagesRef, theme: statThemes[0] },
-    { icon: <FaUsers />, value: `${animRegistered.toLocaleString("en-IN")}+`, label: t.studentsRegistered, ref: registeredRef, theme: statThemes[1] },
-    { icon: <FaCheckCircle />, value: `${animCompleted.toLocaleString("en-IN")}+`, label: t.successfulCompletions, ref: completedRef, theme: statThemes[2] },
-    { icon: <FaPercentage />, value: `${animRate}%`, label: t.overallSuccessRate, ref: rateRef, theme: statThemes[3] },
+function Breakdown({ title, items, nameKey, countKey, emptyText }) {
+  const max = Math.max(1, ...items.map((x) => number(x[countKey])));
+  return (
+    <div className="ss-breakdown-card">
+      <h3>
+        <FaBullseye /> {title}
+      </h3>
+      {items.length ? (
+        <div className="ss-breakdown-list">
+          {items.map((item, i) => (
+            <div className="ss-breakdown-row" key={`${item[nameKey]}-${i}`}>
+              <div className="ss-breakdown-label">
+                <span>{item[nameKey]}</span>
+                <strong>
+                  {number(item[countKey]).toLocaleString("en-IN")}
+                </strong>
+              </div>
+              <div className="ss-breakdown-track">
+                <div
+                  className="ss-breakdown-fill"
+                  style={{ width: `${(number(item[countKey]) / max) * 100}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="ss-empty-text">{emptyText}</p>
+      )}
+    </div>
+  );
+}
+
+export default function SuccessStory() {
+  const { language } = useLanguage();
+  const t = copy[language] || copy.en;
+  const [departments, setDepartments] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [districtCountsAvailable, setDistrictCountsAvailable] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [filters, setFilters] = useState({
+    district: "all",
+    department: "all",
+    category: "all",
+    scheme: "all",
+  });
+
+  const loadData = async () => {
+    setLoading(true);
+    setError("");
+    const headers = { Accept: "application/json" };
+    const [departmentResult, districtResult, districtCountsResult] =
+      await Promise.allSettled([
+        fetch(DEPARTMENTS_API, { headers }),
+        // Public district master list: deliberately no credentials.
+        fetch(DISTRICTS_API, { method: "GET", headers, credentials: "omit" }),
+        // Public aggregate endpoint: returns district names and registration counts only.
+        fetch(DISTRICT_COUNTS_API, {
+          method: "GET",
+          headers,
+          credentials: "omit",
+        }),
+      ]);
+    try {
+      if (departmentResult.status !== "fulfilled" || !departmentResult.value.ok)
+        throw new Error("Departments API request failed");
+      const departmentJson = await departmentResult.value.json();
+      setDepartments(unwrap(departmentJson));
+    } catch (e) {
+      setError(e.message || t.apiError);
+    }
+
+    if (districtResult.status === "fulfilled" && districtResult.value.ok) {
+      try {
+        const districtJson = await districtResult.value.json();
+        const rows = unwrap(districtJson);
+        let countRows = [];
+        if (
+          districtCountsResult.status === "fulfilled" &&
+          districtCountsResult.value.ok
+        ) {
+          const countJson = await districtCountsResult.value.json();
+          countRows = unwrap(countJson);
+        }
+        const countMap = new Map();
+        countRows.forEach((item) => {
+          const key = String(item.district || item.name || "")
+            .trim()
+            .toLocaleLowerCase();
+          const value =
+            item.registered_student_count ??
+            item.registration_count ??
+            item.total_registrations ??
+            item.total;
+          if (key) countMap.set(key, number(value));
+        });
+        const normalized = rows
+          .map((item) => {
+            const name =
+              item.district ||
+              item.name ||
+              item.district_name ||
+              item.district_hindi ||
+              "";
+            const key = String(name).trim().toLocaleLowerCase();
+            const countValue = countMap.has(key) ? countMap.get(key) : null;
+            return { ...item, name, count: countValue };
+          })
+          .filter((item) => item.name);
+        setDistricts(normalized);
+        setDistrictCountsAvailable(
+          countRows.length > 0 &&
+            normalized.some((item) => item.count !== null),
+        );
+      } catch {
+        setDistricts([]);
+        setDistrictCountsAvailable(false);
+      }
+    } else {
+      setDistricts([]);
+      setDistrictCountsAvailable(false);
+      setError(
+        (old) =>
+          old ||
+          `Districts API failed (${districtResult.status === "fulfilled" ? districtResult.value.status : "network error"}).`,
+      );
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const departmentRows = useMemo(
+    () =>
+      departments.map((d) => ({
+        id: d.id,
+        name: labelOf(d, language, "department", "department_hindi"),
+        categories: (d.categories || []).map((c) => ({
+          ...c,
+          name: labelOf(c, language, "category", "category_hindi"),
+          count: number(c.registered_student_count),
+          schemes: (c.schemes || []).map((s) => ({
+            ...s,
+            name: labelOf(s, language, "scheme", "scheme_hindi"),
+            count: number(s.registered_student_count),
+          })),
+        })),
+      })),
+    [departments, language],
+  );
+
+  const categoryRows = useMemo(
+    () =>
+      departmentRows.flatMap((d) =>
+        d.categories.map((c) => ({ ...c, departmentName: d.name })),
+      ),
+    [departmentRows],
+  );
+  const schemeRows = useMemo(
+    () =>
+      categoryRows.flatMap((c) =>
+        c.schemes.map((s) => ({
+          ...s,
+          categoryName: c.name,
+          categoryId: c.id,
+          departmentName: c.departmentName,
+        })),
+      ),
+    [categoryRows],
+  );
+  const districtRows = useMemo(
+    () =>
+      districts.map((item) => ({
+        name:
+          labelOf(item, language, "district", "district_hindi") || item.name,
+        count: item.count,
+        id: item.id,
+      })),
+    [districts, language],
+  );
+
+  const departmentOptions = departmentRows;
+  const selectedDepartment =
+    filters.department === "all"
+      ? null
+      : departmentRows.find((d) => String(d.id) === filters.department);
+  const visibleCategories = categoryRows.filter(
+    (c) =>
+      (!selectedDepartment || c.departmentName === selectedDepartment.name) &&
+      (filters.category === "all" || String(c.id) === filters.category),
+  );
+  const visibleSchemes = schemeRows.filter(
+    (s) =>
+      (!selectedDepartment || s.departmentName === selectedDepartment.name) &&
+      (filters.category === "all" ||
+        String(s.categoryId) === filters.category) &&
+      (filters.scheme === "all" || String(s.id) === filters.scheme),
+  );
+  const visibleDistricts = districtRows.filter(
+    (d) => filters.district === "all" || d.name === filters.district,
+  );
+
+  const totalRegistered = categoryRows.reduce((sum, c) => sum + c.count, 0);
+  const uniqueDistrictCount = districts.length;
+  const totalCategories = categoryRows.length;
+  const totalSchemes = schemeRows.length;
+  const stats = [
+    {
+      icon: <FaMapMarkerAlt />,
+      value: uniqueDistrictCount,
+      label: t.districts,
+    },
+    { icon: <FaUsers />, value: totalRegistered, label: t.registered },
+    { icon: <FaLayerGroup />, value: totalCategories, label: t.categories },
+    { icon: <FaBookOpen />, value: totalSchemes, label: t.schemes },
   ];
 
-  const villageThemes = [
-    { bg: "#eaf8fa", border: "#b6ecf2", iconBg: "#cdf2f7", iconColor: "#0891b2", numColor: "#056380", barColor: "#06b6d4", barTrack: "#b6ecf2", shadow: "rgba(6,182,212,0.08)", hoverShadow: "rgba(6,182,212,0.18)", accent: "#06b6d4" },
-    { bg: "#fef0ef", border: "#fcd5d2", iconBg: "#fde2e0", iconColor: "#dc2626", numColor: "#a01a1a", barColor: "#ef4444", barTrack: "#fcd5d2", shadow: "rgba(220,38,38,0.08)", hoverShadow: "rgba(220,38,38,0.18)", accent: "#ef4444" },
-    { bg: "#edfaf4", border: "#b8ecd0", iconBg: "#d0f5e2", iconColor: "#0d8043", numColor: "#06612f", barColor: "#10b981", barTrack: "#b8ecd0", shadow: "rgba(13,128,67,0.08)", hoverShadow: "rgba(13,128,67,0.18)", accent: "#10b981" },
-    { bg: "#fef9ee", border: "#fce3b3", iconBg: "#fdf0d0", iconColor: "#b8860b", numColor: "#8b6508", barColor: "#d4a017", barTrack: "#fce3b3", shadow: "rgba(184,134,11,0.08)", hoverShadow: "rgba(184,134,11,0.18)", accent: "#d4a017" },
-    { bg: "#f5effe", border: "#e0ccff", iconBg: "#ecddff", iconColor: "#7c3aed", numColor: "#5b21b6", barColor: "#8b5cf6", barTrack: "#e0ccff", shadow: "rgba(124,58,237,0.08)", hoverShadow: "rgba(124,58,237,0.18)", accent: "#8b5cf6" },
-  ];
-
-  const villageIcons = [<FaSchool />, <FaHeartbeat />, <FaLeaf />, <FaHardHat />, <FaUniversity />];
+  const setFilter = (key, value) =>
+    setFilters((old) => ({
+      ...old,
+      [key]: value,
+      ...(key === "department" ? { category: "all", scheme: "all" } : {}),
+      ...(key === "category" ? { scheme: "all" } : {}),
+    }));
+  const districtChartRows =
+    filters.district === "all"
+      ? districtRows
+      : districtRows.filter((x) => x.name === filters.district);
+  const districtMetricRows = districtChartRows.filter(
+    (d) => d.count !== null && d.count !== undefined,
+  );
+  const categoryChartRows = visibleCategories;
+  const schemeChartRows = visibleSchemes;
 
   return (
     <section className="success-story-section">
       <Container>
-        {/* HEADING */}
-        <div className="ss-section-heading">
-          <div className="ss-section-badge"><FaTrophy /><span>{t.badge}</span></div>
+        <header className="ss-section-heading">
+          <div className="ss-section-badge">
+            <FaTrophy />
+            <span>{t.badge}</span>
+          </div>
           <h2>{t.heading}</h2>
           <p>{t.subheading}</p>
-          <div className="ss-heading-tricolor"><div /><div /><div /></div>
-        </div>
+          <div className="ss-heading-tricolor">
+            <i />
+            <i />
+            <i />
+          </div>
+        </header>
 
-        {/* STAT CARDS */}
-        <Row className="g-4 ss-stats-row">
-          {statCards.map((card, i) => (
-            <Col md={6} lg={3} key={i}>
-              <div className="ss-stat-card" ref={card.ref} style={{ "--stat-bg": card.theme.bg, "--stat-border": card.theme.border, "--stat-icon-bg": card.theme.iconBg, "--stat-icon-color": card.theme.iconColor, "--stat-num-color": card.theme.numColor, "--stat-shadow": card.theme.shadow, "--stat-hover-shadow": card.theme.hoverShadow, "--stat-bar": card.theme.bar }}>
-                <div className="ss-stat-icon">{card.icon}</div>
-                <strong>{card.value}</strong>
-                <span>{card.label}</span>
-                <div className="ss-stat-bar"><div className="ss-stat-bar-fill" /></div>
+        {error && (
+          <Alert variant="warning" className="ss-alert">
+            {t.apiError} {error}
+          </Alert>
+        )}
+        {loading ? (
+          <div className="ss-loading">
+            <Spinner animation="border" />
+            <span>{t.loading}</span>
+          </div>
+        ) : (
+          <>
+            <Row className="g-3 ss-stats-row">
+              {stats.map((s, i) => (
+                <Col xs={6} lg={3} key={s.label}>
+                  <div className={`ss-stat-card ss-stat-${i}`}>
+                    <span className="ss-stat-icon">{s.icon}</span>
+                    <strong>{s.value.toLocaleString("en-IN")}</strong>
+                    <span>{s.label}</span>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+
+            <div className="ss-filters-card">
+              <div className="ss-filter-title">
+                <FaFilter /> <strong>{t.filters}</strong>
               </div>
-            </Col>
-          ))}
-        </Row>
+              <Row className="g-3">
+                <Col md={6} lg={3}>
+                  <Form.Select
+                    value={filters.district}
+                    onChange={(e) => setFilter("district", e.target.value)}
+                    className="ss-filter-select"
+                  >
+                    <option value="all">{t.allDistricts}</option>
+                    {districtRows.map((d) => (
+                      <option key={d.name} value={d.name}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Col>
+                <Col md={6} lg={3}>
+                  <Form.Select
+                    value={filters.department}
+                    onChange={(e) => setFilter("department", e.target.value)}
+                    className="ss-filter-select"
+                  >
+                    <option value="all">{t.allDepartments}</option>
+                    {departmentOptions.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Col>
+                <Col md={6} lg={3}>
+                  <Form.Select
+                    value={filters.category}
+                    onChange={(e) => setFilter("category", e.target.value)}
+                    className="ss-filter-select"
+                  >
+                    <option value="all">{t.allCategories}</option>
+                    {(selectedDepartment
+                      ? selectedDepartment.categories
+                      : categoryRows
+                    ).map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Col>
+                <Col md={6} lg={3}>
+                  <Form.Select
+                    value={filters.scheme}
+                    onChange={(e) => setFilter("scheme", e.target.value)}
+                    className="ss-filter-select"
+                  >
+                    <option value="all">{t.allSchemes}</option>
+                    {(filters.category === "all"
+                      ? schemeRows
+                      : schemeRows.filter(
+                          (s) => String(s.categoryId) === filters.category,
+                        )
+                    ).map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Col>
+              </Row>
+            </div>
 
-        {/* FILTERS */}
-        <div className="ss-filters-card">
-          <Row className="g-3 align-items-center">
-            <Col lg="auto"><div className="ss-filter-title"><FaFilter /><span>{t.filters}</span></div></Col>
-            <Col md><Form.Select name="village" value={filters.village} onChange={handleFilterChange} className="ss-filter-select"><option value="all">{t.allVillages}</option>{t.successData.map((item) => <option key={item.village} value={item.village}>{item.village}</option>)}</Form.Select></Col>
-            <Col md><Form.Select name="department" value={filters.department} onChange={handleFilterChange} className="ss-filter-select"><option value="all">{t.allDepartments}</option>{allDepartments.map((d) => <option key={d} value={d}>{d}</option>)}</Form.Select></Col>
-            <Col md><Form.Select name="scheme" value={filters.scheme} onChange={handleFilterChange} className="ss-filter-select"><option value="all">{t.allSchemes}</option>{allSchemes.map((s) => <option key={s} value={s}>{s}</option>)}</Form.Select></Col>
-          </Row>
-        </div>
-
-        {/* CHART + BREAKDOWN */}
-        {filteredData.length > 1 && (
-          <div className="ss-chart-structure">
-            <Row className="g-4">
+            <Row className="g-4 ss-chart-grid">
               <Col lg={7}>
-                <div className="ss-chart-main">
-                  <div className="ss-chart-main-header">
-                    <div className="ss-chart-main-icon"><FaChartBar /></div>
-                    <div><h4>{t.villagePerformance}</h4><p>{t.registeredVsCompleted}</p></div>
-                  </div>
-                  <div className="ss-chart-wrapper"><Bar options={chartOptions} data={chartData} /></div>
-                </div>
+                <ChartPanel
+                  title={t.districtPerformance}
+                  subtitle={t.districtDesc}
+                  labels={districtMetricRows.map((d) => d.name)}
+                  values={districtMetricRows.map((d) => d.count)}
+                  emptyText={districtCountsAvailable ? t.noData : t.noDistrict}
+                />
               </Col>
-              <Col lg={5} className="d-none d-lg-block">
-                <div className="ss-breakdown-panel">
-                  <div className="ss-breakdown-header"><FaBullseye /><h4>{t.villageBreakdown}</h4></div>
-                  <div className="ss-breakdown-list">
-                    {filteredData.map((item, i) => {
-                      const rate = item.registered > 0 ? Math.round((item.completed / item.registered) * 100) : 0;
-                      const theme = villageThemes[i % villageThemes.length];
-                      return (
-                        <div key={i} className="ss-breakdown-item" style={{ "--bd-bg": theme.bg, "--bd-border": theme.border, "--bd-icon-bg": theme.iconBg, "--bd-icon-color": theme.iconColor, "--bd-num-color": theme.numColor, "--bd-bar": theme.barColor, "--bd-bar-track": theme.barTrack }}>
-                          <div className="ss-breakdown-item-header">
-                            <div className="ss-breakdown-icon">{villageIcons[i % villageIcons.length]}</div>
-                            <div className="ss-breakdown-info"><strong>{item.village}</strong><span>{rate}% {t.successRate}</span></div>
-                            <div className="ss-breakdown-rate"><FaArrowUp /><strong>{rate}%</strong></div>
-                          </div>
-                          <div className="ss-breakdown-bars">
-                            <div className="ss-breakdown-bar-row">
-                              <span className="ss-breakdown-bar-label">{t.registered}</span>
-                              <div className="ss-breakdown-bar-track"><div className="ss-breakdown-bar-fill" style={{ width: "100%" }} /></div>
-                              <span className="ss-breakdown-bar-value">{(item.registered / 1000).toFixed(0)}K</span>
-                            </div>
-                            <div className="ss-breakdown-bar-row">
-                              <span className="ss-breakdown-bar-label">{t.completed}</span>
-                              <div className="ss-breakdown-bar-track"><div className="ss-breakdown-bar-fill" style={{ width: `${rate}%` }} /></div>
-                              <span className="ss-breakdown-bar-value">{(item.completed / 1000).toFixed(0)}K</span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+              <Col lg={5}>
+                <Breakdown
+                  title={t.districtBreakdown}
+                  items={districtMetricRows}
+                  nameKey="name"
+                  countKey="count"
+                  emptyText={
+                    districtCountsAvailable ? t.noData : t.noDistrictDesc
+                  }
+                />
+              </Col>
+              <Col lg={7}>
+                <ChartPanel
+                  title={t.categoryPerformance}
+                  subtitle={t.categoryDesc}
+                  labels={categoryChartRows.map((c) => c.name)}
+                  values={categoryChartRows.map((c) => c.count)}
+                  emptyText={t.noData}
+                />
+              </Col>
+              <Col lg={5}>
+                <Breakdown
+                  title={t.categoryBreakdown}
+                  items={categoryChartRows.map((c) => ({
+                    name: c.name,
+                    count: c.count,
+                  }))}
+                  nameKey="name"
+                  countKey="count"
+                  emptyText={t.noData}
+                />
+              </Col>
+              <Col lg={7}>
+                <ChartPanel
+                  title={t.schemePerformance}
+                  subtitle={t.schemeDesc}
+                  labels={schemeChartRows.map((s) => s.name)}
+                  values={schemeChartRows.map((s) => s.count)}
+                  emptyText={t.noData}
+                />
+              </Col>
+              <Col lg={5}>
+                <Breakdown
+                  title={t.schemeBreakdown}
+                  items={schemeChartRows.map((s) => ({
+                    name: s.name,
+                    count: s.count,
+                  }))}
+                  nameKey="name"
+                  countKey="count"
+                  emptyText={t.noData}
+                />
               </Col>
             </Row>
 
-            {/* COMPARISON STRIP */}
-            <div className="ss-comparison-strip">
-              {filteredData.map((item, i) => {
-                const rate = item.registered > 0 ? Math.round((item.completed / item.registered) * 100) : 0;
-                const theme = villageThemes[i % villageThemes.length];
-                return (
-                  <div key={i} className="ss-compare-item" style={{ "--cmp-bg": theme.bg, "--cmp-border": theme.border, "--cmp-icon-color": theme.iconColor, "--cmp-bar": theme.barColor, "--cmp-bar-track": theme.barTrack }}>
-                    <div className="ss-compare-icon">{villageIcons[i % villageIcons.length]}</div>
-                    <strong>{item.village}</strong>
-                    <div className="ss-compare-progress">
-                      <div className="ss-compare-progress-track"><div className="ss-compare-progress-fill" style={{ width: `${rate}%` }} /></div>
-                    </div>
-                    <span>{rate}%</span>
-                  </div>
-                );
-              })}
+            <div className="ss-data-note">
+              <FaUniversity />
+              <span>{t.dataNote}</span>
             </div>
-          </div>
-        )}
-
-        {/* VILLAGE STORY CARDS */}
-        <Row className="g-4 ss-stories-row">
-          {filteredData.length > 0 ? (
-            filteredData.map((item, index) => {
-              const successRate = item.registered > 0 ? Math.round((item.completed / item.registered) * 100) : 0;
-              const theme = villageThemes[index % villageThemes.length];
-              return (
-                <Col md={6} lg={4} key={index}>
-                  <div className="ss-village-card" style={{ "--v-bg": theme.bg, "--v-border": theme.border, "--v-icon-bg": theme.iconBg, "--v-icon-color": theme.iconColor, "--v-num-color": theme.numColor, "--v-bar": theme.barColor, "--v-bar-track": theme.barTrack, "--v-shadow": theme.shadow, "--v-hover-shadow": theme.hoverShadow, "--v-accent": theme.accent }}>
-                    <div className="ss-village-top-bar" />
-                    <div className="ss-village-header">
-                      <div className="ss-village-icon">{villageIcons[index % villageIcons.length]}</div>
-                      <div className="ss-village-title-wrap"><h4>{item.village}</h4><span className="ss-success-badge">{successRate}% {t.success}</span></div>
-                    </div>
-                    <div className="ss-village-story"><FaQuoteLeft /><p>{item.story}</p></div>
-                    <div className="ss-village-stats">
-                      <div className="ss-village-stat-item"><strong>{item.registered.toLocaleString("en-IN")}</strong><span>{t.registered}</span></div>
-                      <div className="ss-village-stat-divider" />
-                      <div className="ss-village-stat-item"><strong>{item.completed.toLocaleString("en-IN")}</strong><span>{t.completed}</span></div>
-                    </div>
-                    <div className="ss-village-progress">
-                      <div className="ss-village-progress-track"><div className="ss-village-progress-fill" style={{ width: `${successRate}%` }} /></div>
-                      <span className="ss-village-progress-label">{successRate}%</span>
-                    </div>
-                    <div className="ss-village-schemes">
-                      <strong>{t.activeSchemes}</strong>
-                      <div className="ss-scheme-list">
-                        {item.schemes.map((scheme) => (
-                          <div key={scheme.name} className="ss-scheme-item">
-                            <FaArrowRight className="ss-scheme-arrow" />
-                            <span className="ss-scheme-name">{scheme.name}</span>
-                            <span className="ss-scheme-count">{scheme.enrolled.toLocaleString("en-IN")}</span>
+            <div className="ss-detail-section">
+              <h3>{t.departmentBreakdown}</h3>
+              <Row className="g-3">
+                {departmentRows
+                  .filter(
+                    (d) =>
+                      !selectedDepartment || d.id === selectedDepartment.id,
+                  )
+                  .map((d) => (
+                    <Col md={6} xl={4} key={d.id}>
+                      <article className="ss-department-card">
+                        <div className="ss-department-card-head">
+                          <span>
+                            <FaUniversity />
+                          </span>
+                          <h4>{d.name}</h4>
+                        </div>
+                        <div className="ss-department-meta">
+                          <span>
+                            {d.categories.length} {t.categories}
+                          </span>
+                          <span>
+                            {d.categories.reduce(
+                              (sum, c) => sum + c.schemes.length,
+                              0,
+                            )}{" "}
+                            {t.schemes}
+                          </span>
+                        </div>
+                        {d.categories.map((c) => (
+                          <div className="ss-category-line" key={c.id}>
+                            <div>
+                              <strong>{c.name}</strong>
+                              <b>{c.count.toLocaleString("en-IN")}</b>
+                            </div>
+                            {c.schemes.map((s) => (
+                              <div className="ss-scheme-line" key={s.id}>
+                                <span>
+                                  <FaArrowRight /> {s.name}
+                                </span>
+                                <strong>
+                                  {s.count.toLocaleString("en-IN")}
+                                </strong>
+                              </div>
+                            ))}
                           </div>
                         ))}
-                      </div>
-                    </div>
-                  </div>
-                </Col>
-              );
-            })
-          ) : (
-            <Col>
-              <div className="ss-no-results"><FaTrophy /><h4>{t.noResults}</h4><p>{t.noResultsDesc}</p></div>
-            </Col>
-          )}
-        </Row>
+                      </article>
+                    </Col>
+                  ))}
+              </Row>
+            </div>
+          </>
+        )}
+        <div className="ss-refresh-row">
+          <button type="button" onClick={loadData}>
+            {t.retry}
+          </button>
+        </div>
       </Container>
     </section>
   );
 }
-
-export default SuccessStory;
