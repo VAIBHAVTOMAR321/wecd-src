@@ -65,14 +65,20 @@ const DepartLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet, onNavC
       setSidebarOpen(false);
     }
   };
- const menuItems = [
+  const menuItems = [
       {
         icon: <FaTachometerAlt />,
         label: "DashBoard",
-        path: "/AdminDashBoard",
+        path: "/DepartDashBoard",
         active: true,
       },
-     ];
+      {
+        icon: <FaUsers />,
+        label: "Assigned Students",
+        path: "/DepartAssignedStudents",
+        active: false,
+      },
+      ];
 
   //  Auto-close sidebar when switching to mobile or tablet
 
@@ -86,7 +92,7 @@ const DepartLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet, onNavC
           {sidebarOpen ? (
             <div className="logo-container">
               <div className="logo">
-                  Admin Panel
+                  Department Panel
               </div>
             </div>
           ) : (
