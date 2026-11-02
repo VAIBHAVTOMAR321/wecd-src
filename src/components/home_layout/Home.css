@@ -2981,3 +2981,51 @@
     font-size: 12px;
   }
 }
+
+/* Registered student counts returned by the departments API */
+.department-category-expanded h6 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.registered-count-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: rgba(19, 136, 8, 0.10);
+  color: #176b24;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+.department-scheme-expanded {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.scheme-registered-count {
+  color: #176b24;
+  font-size: 10px;
+  font-weight: 700;
+}
+.scheme-registered-total {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 12px 0 0;
+  color: #176b24;
+}
+.scheme-registered-total strong {
+  font-size: 1.55rem;
+  line-height: 1.2;
+}
+.scheme-registered-total span {
+  font-size: 0.82rem;
+  font-weight: 600;
+}

@@ -288,36 +288,51 @@ function Home() {
     fetchDepartments();
   }, []);
 
-  const departments = t.departments.map((dept, i) => ({
-    ...dept,
-    icon: departmentIcons[i],
-    cardColor: departmentColors[i],
-    color: departmentIconColors[i],
-  }));
+  // All department, category and scheme records are read from the departments API.
+  const departments = apiDepartments.map((dept, i) => {
+    const categories = dept.categories || [];
+    return {
+      id: dept.id,
+      name: language === "en" ? dept.department : (dept.department_hindi || dept.department),
+      studentCount: categories.reduce((sum, category) => sum + Number(category.registered_student_count || 0), 0),
+      schemesCount: categories.reduce((sum, category) => sum + (category.schemes || []).length, 0),
+      icon: departmentIcons[i % departmentIcons.length],
+      cardColor: departmentColors[i % departmentColors.length],
+      color: departmentIconColors[i % departmentIconColors.length],
+    };
+  });
 
-  const empowermentAreas = t.empowermentAreas.map((area, i) => ({ ...area, icon: empowermentIcons[i] }));
-  const schemes = t.schemes.map(scheme => ({ ...scheme, icon: schemeIcons[scheme.category] || <FaBookOpen /> }));
+  const empowermentAreas = apiDepartments.flatMap((dept) => (dept.categories || []).map((category, i) => ({
+    title: language === "en" ? category.category : (category.category_hindi || category.category),
+    beneficiaries: Number(category.registered_student_count || 0),
+    programs: (category.schemes || []).length,
+    icon: empowermentIcons[i % empowermentIcons.length],
+  })));
+
+  const schemes = apiDepartments.flatMap((dept) => (dept.categories || []).flatMap((category) =>
+    (category.schemes || []).map((scheme) => ({
+      id: scheme.id,
+      name: language === "en" ? scheme.scheme : (scheme.scheme_hindi || scheme.scheme),
+      department: language === "en" ? dept.department : (dept.department_hindi || dept.department),
+      category: language === "en" ? category.category : (category.category_hindi || category.category),
+      studentCount: Number(scheme.registered_student_count || 0),
+      icon: <FaBookOpen />,
+    }))
+  ));
   const schemeDepartments = [t.allDepartments, ...Array.from(new Set(schemes.map((scheme) => scheme.department)))];
   
-  const [activeSchemeDepartment, setActiveSchemeDepartment] = useState("All Departments");
+  const [activeSchemeDepartment, setActiveSchemeDepartment] = useState(t.allDepartments);
   const [studentLegendExpanded, setStudentLegendExpanded] = useState(false);
   const [schemeLegendExpanded, setSchemeLegendExpanded] = useState(false);
   const [hoverStat, setHoverStat] = useState(null);
   const [expandedDepartment, setExpandedDepartment] = useState(null);
 
-  const totalSchemes = departments.reduce((sum, dept) => sum + dept.schemesCount, 0);
-  const totalBeneficiaries = empowermentAreas.reduce((sum, a) => sum + a.beneficiaries, 0);
+  const totalSchemes = schemes.length;
 
   const allCategories = apiDepartments.flatMap((dept) => dept.categories || []);
   const schemeMax = allCategories.length > 0 ? Math.max(...allCategories.map((c) => c.schemes?.length || 0)) : 0;
 
-  const categories = [
-    { label: t.empowermentAreas[0].title, icon: <FaGraduationCap />, color: '#1a5276', count: Math.round(totalSchemes * 0.35) },
-    { label: t.empowermentAreas[2].title, icon: <FaHeartbeat />, color: '#e74c3c', count: Math.round(totalSchemes * 0.25) },
-    { label: t.empowermentAreas[2].title, icon: <FaAppleAlt />, color: '#27ae60', count: Math.round(totalSchemes * 0.20) },
-    { label: t.empowermentAreas[1].title, icon: <FaShieldAlt />, color: '#8e44ad', count: Math.round(totalSchemes * 0.12) },
-    { label: t.schemes[4].category, icon: <FaHandsHelping />, color: '#FF9933', count: Math.round(totalSchemes * 0.08) },
-  ];
+  const categories = empowermentAreas.slice(0, 5).map((category, i) => ({ label: category.title, icon: category.icon, color: ['#1a5276', '#e74c3c', '#27ae60', '#8e44ad', '#FF9933'][i], count: category.beneficiaries }));
   // inside your component:
   const [activeCard, setActiveCard] = useState(null);
   const [activeTag, setActiveTag] = useState(null);
@@ -329,8 +344,8 @@ function Home() {
   });
 
   const filteredSchemes =
-    activeSchemeDepartment === "All Departments"
-      ? schemes : activeSchemeDepartment === t.allDepartments ? schemes
+    activeSchemeDepartment === t.allDepartments
+      ? schemes : activeSchemeDepartment === "All Departments" ? schemes
       : schemes.filter((scheme) => scheme.department === activeSchemeDepartment);
 
   const handleSchemeDepartmentSelect = (department) => {
@@ -339,10 +354,10 @@ function Home() {
 const statCards = [
   { key: 'dept', icon: <FaDatabase />, label: t.statDepartments, value: departments.length, suffix: '+', color: '#FF9933', desc: t.statDepartmentsDesc },
   { key: 'scheme', icon: <FaFileAlt />, label: t.statSchemes, value: totalSchemes.toLocaleString('en-IN'), suffix: '+', color: '#1a5276', desc: t.statSchemesDesc },
-  { key: 'ben', icon: <FaUsers />, label: t.statBeneficiaries, value: (totalBeneficiaries / 100000).toFixed(1), suffix: 'L+', color: '#138808', desc: t.statBeneficiariesDesc },
 ];
   const generateConicGradient = (data, key, colors) => {
     const total = data.reduce((sum, item) => sum + item[key], 0);
+    if (!data.length || total <= 0) return "conic-gradient(#e5e7eb 0% 100%)";
     let cumulativePercentage = 0;
     const gradientParts = data.map((item, index) => {
       const percentage = (item[key] / total) * 100;
@@ -381,6 +396,7 @@ const statCards = [
     const percentage = angle / 360;
 
     const total = data.reduce((sum, item) => sum + item[key], 0);
+    if (!data.length || total <= 0) return "conic-gradient(#e5e7eb 0% 100%)";
     let cumulativePercentage = 0;
 
     let foundDept = null;
@@ -510,14 +526,7 @@ const handleMouseLeave = () => {
           <div className="panel-image">
             <img src={drcHomeImg} alt="Children Education and Empowerment" />
             <div className="panel-image-overlay" />
-            {/* Overlay stat chip on image */}
-            <div className="image-chip">
-              <FaUsers />
-              <div>
-                <strong>{(totalBeneficiaries / 100000).toFixed(1)}L+</strong>
-                <span>Beneficiaries</span>
-              </div>
-            </div>
+
           </div>
 
           {/* Data strip below image */}
@@ -722,11 +731,19 @@ const handleMouseLeave = () => {
                             <div className="department-categories-expanded">
                               {dept.categories?.map((cat) => (
                                 <div key={cat.id} className="department-category-expanded">
-                                  <h6>{language === 'en' ? cat.category : cat.category_hindi}</h6>
+                                  <h6>
+                                    <span>{language === 'en' ? cat.category : (cat.category_hindi || cat.category)}</span>
+                                    <span className="registered-count-badge">
+                                      {Number(cat.registered_student_count || 0).toLocaleString('en-IN')} {t.studentsSuffix}
+                                    </span>
+                                  </h6>
                                   <div className="department-schemes-expanded">
                                     {cat.schemes?.map((sch) => (
                                       <span key={sch.id} className="department-scheme-expanded">
-                                        {language === 'en' ? sch.scheme : sch.scheme_hindi}
+                                        <span>{language === 'en' ? sch.scheme : (sch.scheme_hindi || sch.scheme)}</span>
+                                        <strong className="scheme-registered-count">
+                                          {Number(sch.registered_student_count || 0).toLocaleString('en-IN')} {t.studentsSuffix}
+                                        </strong>
                                       </span>
                                     ))}
                                     {!cat.schemes || cat.schemes.length === 0 && <span className="text-muted small">{t.noSchemesFound}</span>}
@@ -939,7 +956,7 @@ const handleMouseLeave = () => {
                 <div className="scheme-card">
                   <div className="scheme-card-accent" />
                   <div className="scheme-card-header">
-                    <div className="scheme-badge" style={{ backgroundColor: categoryColors[scheme.category] }}>
+                    <div className="scheme-badge" style={{ backgroundColor: categoryColors[scheme.category] || "#1a5276" }}>
                       <span className="scheme-badge-dot" />
                       {scheme.category}
                     </div>
@@ -951,21 +968,10 @@ const handleMouseLeave = () => {
                   <div className="scheme-card-body">
                     <h3>{scheme.name}</h3>
                     <p className="scheme-card-meta">{scheme.department}</p>
-                    {scheme.studentCount && (
-                      <p className="scheme-card-meta"><strong>{t.enrolledLabel}:</strong> {scheme.studentCount.toLocaleString('en-IN')} {t.studentsSuffix}</p>
-                    )}
-                    <p>{scheme.objective}</p>
-                  </div>
-
-                  <div className="scheme-card-footer">
-                    <div>
-                      <strong>{t.eligibilityLabel}</strong>
-                      <p>{scheme.eligibility}</p>
-                    </div>
-                    <div>
-                      <strong>{t.benefitsLabel}</strong>
-                      <p>{scheme.benefits}</p>
-                    </div>
+                    <p className="scheme-registered-total">
+                      <strong>{scheme.studentCount.toLocaleString('en-IN')}</strong>
+                      <span>{t.studentsSuffix}</span>
+                    </p>
                   </div>
                 </div>
               </Col>
