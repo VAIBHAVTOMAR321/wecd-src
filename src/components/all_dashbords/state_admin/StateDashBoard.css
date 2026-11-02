@@ -1,0 +1,556 @@
+.state-dashboard-content {
+  padding: 24px 26px 30px;
+  min-height: calc(100vh - 70px);
+  background: #f4f7fc;
+  color: #172554;
+}
+
+.state-dashboard-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+  padding: 2px 2px 18px;
+  border-bottom: 1px solid #e3eaf5;
+}
+.state-dashboard-eyebrow {
+  color: #2474d2;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.7px;
+  margin-bottom: 5px;
+}
+.state-dashboard-heading h1 {
+  color: #101f4b;
+  font-size: clamp(24px, 2.2vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.7px;
+  margin: 0;
+}
+.state-dashboard-heading p {
+  color: #71809b;
+  font-size: 13px;
+  margin: 5px 0 0;
+}
+.state-dashboard-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.state-last-updated {
+  color: #7b879d;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.state-refresh-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d8e5f5;
+  border-radius: 9px;
+  padding: 9px 13px;
+  background: #fff;
+  color: #1769c2;
+  font-size: 12px;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+.state-refresh-button:hover {
+  background: #edf5ff;
+  border-color: #9fc6f2;
+}
+.state-refresh-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.state-spin {
+  animation: stateSpin 1s linear infinite;
+}
+@keyframes stateSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.state-kpi-card {
+  border: 1px solid #e8edf5 !important;
+  border-radius: 15px !important;
+  box-shadow: 0 3px 12px rgba(28, 55, 100, 0.055);
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.state-kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(28, 55, 100, 0.09);
+}
+.state-kpi-card .card-body {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 19px 18px;
+}
+.state-kpi-icon {
+  flex: 0 0 53px;
+  width: 53px;
+  height: 53px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  font-size: 21px;
+}
+.state-kpi-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.state-kpi-copy span {
+  color: #66758f;
+  font-size: 12px;
+  font-weight: 650;
+}
+.state-kpi-copy strong {
+  color: #14234f;
+  font-size: 27px;
+  line-height: 1.25;
+  font-weight: 800;
+  margin: 3px 0 1px;
+}
+.state-kpi-copy small {
+  color: #98a3b5;
+  font-size: 10px;
+}
+.kpi-blue {
+  background: linear-gradient(115deg, #fff 30%, #eff8ff 100%);
+}
+.kpi-blue .state-kpi-icon {
+  color: #1876d2;
+  background: #dff0ff;
+}
+.kpi-purple {
+  background: linear-gradient(115deg, #fff 30%, #f6f1ff 100%);
+}
+.kpi-purple .state-kpi-icon {
+  color: #7652c9;
+  background: #eee6ff;
+}
+.kpi-orange {
+  background: linear-gradient(115deg, #fff 30%, #fff8eb 100%);
+}
+.kpi-orange .state-kpi-icon {
+  color: #d58b20;
+  background: #fff0d4;
+}
+.kpi-green {
+  background: linear-gradient(115deg, #fff 30%, #effcf5 100%);
+}
+.kpi-green .state-kpi-icon {
+  color: #169b65;
+  background: #dcf8e9;
+}
+
+.state-panel {
+  border: 1px solid #e6ecf5 !important;
+  border-radius: 15px !important;
+  box-shadow: 0 3px 13px rgba(28, 55, 100, 0.05);
+  background: #fff;
+}
+.state-panel .card-body {
+  padding: 20px 21px;
+}
+.state-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.state-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+.state-panel-icon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  color: #1674d1;
+  background: #edf6ff;
+  border-radius: 10px;
+  font-size: 15px;
+}
+.state-panel-title h2 {
+  color: #182650;
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0;
+}
+.state-panel-title p {
+  color: #94a0b2;
+  font-size: 10px;
+  margin: 4px 0 0;
+}
+.state-panel-heading > .badge {
+  font-size: 10px;
+  font-weight: 650;
+  padding: 7px 9px;
+  border: 1px solid #edf0f5;
+}
+.state-panel-total {
+  color: #1769c2;
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+  padding-top: 7px;
+}
+
+.state-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.state-category-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 7px;
+}
+.state-category-label > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.state-category-label strong {
+  color: #33415f;
+  font-size: 11px;
+  font-weight: 700;
+}
+.state-category-label small {
+  color: #a0a9b8;
+  font-size: 9px;
+  margin-top: 1px;
+}
+.state-category-label b {
+  color: #172650;
+  font-size: 11px;
+  font-weight: 800;
+}
+.state-category-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 9px;
+}
+.dot-0 {
+  background: #2582df;
+}
+.dot-1 {
+  background: #9271df;
+}
+.dot-2 {
+  background: #efa83c;
+}
+.dot-3 {
+  background: #31bd83;
+}
+.dot-4 {
+  background: #ed7fae;
+}
+.state-progress-track {
+  width: 100%;
+  height: 7px;
+  background: #edf1f7;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.state-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.35s ease;
+}
+.fill-0 {
+  background: #2582df;
+}
+.fill-1 {
+  background: #9271df;
+}
+.fill-2 {
+  background: #efa83c;
+}
+.fill-3 {
+  background: #31bd83;
+}
+.fill-4 {
+  background: #ed7fae;
+}
+
+.state-ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 2px;
+}
+.state-ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.state-rank-number {
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #edf2f8;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+}
+.rank-1 {
+  background: #e2efff;
+  color: #1769c2;
+}
+.rank-2 {
+  background: #f0eaff;
+  color: #7954c8;
+}
+.rank-3 {
+  background: #fff1dd;
+  color: #c47b16;
+}
+.state-ranking-main {
+  flex: 1;
+  min-width: 0;
+}
+.state-ranking-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+.state-ranking-label strong {
+  color: #34415e;
+  font-size: 11px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.state-ranking-label b {
+  color: #172650;
+  font-size: 11px;
+  font-weight: 800;
+}
+.ranking-fill {
+  background: linear-gradient(90deg, #2d8ce8, #72b6f3);
+}
+
+.state-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.state-data-table {
+  min-width: 420px;
+}
+.state-data-table thead th {
+  background: #f0f6fd;
+  color: #60718e;
+  border: 0;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 11px 12px;
+  white-space: nowrap;
+}
+.state-data-table thead th:first-child {
+  border-radius: 7px 0 0 7px;
+}
+.state-data-table thead th:last-child {
+  border-radius: 0 7px 7px 0;
+}
+.state-data-table tbody td {
+  color: #52617a;
+  border-color: #edf1f6;
+  font-size: 11px;
+  padding: 11px 12px;
+  vertical-align: middle;
+}
+.state-data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.state-data-table tbody td strong {
+  color: #263657;
+  font-weight: 700;
+}
+.state-hindi-name {
+  display: block;
+  color: #9aa5b5;
+  font-size: 9px;
+  margin-top: 2px;
+}
+
+.state-department-list {
+  display: flex;
+  flex-direction: column;
+}
+.state-department-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 2px;
+  border-bottom: 1px solid #edf1f6;
+}
+.state-department-item:first-child {
+  padding-top: 0;
+}
+.state-department-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.state-department-symbol {
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #eef6ff;
+  color: #287acb;
+  font-size: 14px;
+}
+.state-department-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.state-department-info strong {
+  color: #34415e;
+  font-size: 11px;
+  font-weight: 750;
+}
+.state-department-info small {
+  color: #9aa5b5;
+  font-size: 9px;
+}
+.state-department-info span {
+  color: #8b98aa;
+  font-size: 9px;
+  margin-top: 4px;
+}
+.state-department-info span i {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #b2bdcc;
+  vertical-align: middle;
+  margin: 0 5px;
+}
+.state-department-arrow {
+  color: #aab6c6;
+  font-size: 10px;
+}
+.state-empty-state {
+  min-height: 100px;
+  display: grid;
+  place-items: center;
+  color: #96a1b2;
+  font-size: 11px;
+  text-align: center;
+  padding: 20px;
+  background: #fafbfd;
+  border: 1px dashed #e2e9f2;
+  border-radius: 10px;
+}
+.state-dashboard-loading {
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #60718e;
+  font-size: 13px;
+}
+.state-dashboard-loading .spinner-border {
+  width: 23px;
+  height: 23px;
+  color: #247bd1;
+}
+.state-dashboard-alert {
+  border-radius: 10px;
+  font-size: 12px;
+}
+.state-alert-retry {
+  border: 0;
+  background: transparent;
+  color: #842029;
+  font-weight: 800;
+  text-decoration: underline;
+}
+.state-dashboard-footnote {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #9aa5b5;
+  font-size: 10px;
+  padding: 17px 3px 0;
+}
+
+@media (max-width: 991px) {
+  .state-dashboard-content {
+    padding: 20px 17px 25px;
+  }
+  .state-panel .card-body {
+    padding: 17px;
+  }
+}
+@media (max-width: 767px) {
+  .state-dashboard-content {
+    padding: 16px 12px 22px;
+  }
+  .state-dashboard-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 15px;
+  }
+  .state-dashboard-heading-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .state-last-updated {
+    font-size: 10px;
+  }
+  .state-kpi-card .card-body {
+    padding: 14px;
+    gap: 11px;
+  }
+  .state-kpi-icon {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+    font-size: 18px;
+  }
+  .state-kpi-copy strong {
+    font-size: 23px;
+  }
+  .state-panel .card-body {
+    padding: 15px;
+  }
+  .state-panel-heading {
+    margin-bottom: 16px;
+  }
+  .state-panel-title h2 {
+    font-size: 13px;
+  }
+  .state-dashboard-footnote {
+    flex-direction: column;
+  }
+}
