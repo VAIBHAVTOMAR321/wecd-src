@@ -76,7 +76,7 @@ const DisLeftnav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet, onNavClic
       {
         icon: <FaTachometerAlt />,
         label: "DashBoard",
-        path: "/AdminDashBoard",
+        path: "/DisDashBoard",
         active: true,
       },
       
@@ -96,7 +96,7 @@ const DisLeftnav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet, onNavClic
           {sidebarOpen ? (
             <div className="logo-container">
               <div className="logo">
-                  Admin Panel
+                  District Panel
               </div>
             </div>
           ) : (
